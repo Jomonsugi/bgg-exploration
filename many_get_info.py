@@ -12,7 +12,6 @@ def get_stats_results():
     return stat_results
 
 def get_stats(id_game_dict, stat_results):
-    random_sec = np.random.uniform(5,7,[1000,])
     for current_game_stats in stat_results['items']['item']:
         time.sleep(np.random.choice(random_sec))
         # get id
@@ -124,13 +123,23 @@ def get_stats(id_game_dict, stat_results):
         stats_to_mongo(stats_coll, game, game_id, description, categories, mechanics, kickstarter, designer, min_players, max_players, min_playtime, playingtime, min_age, best_num_players, pnb_total_votes, avg_rating, bayesavg_rating, avg_weight, num_comments, num_weights, rankings, users_rated, year_published)
 
 def get_ratings_comments_results():
-    pass
-    # comment_results = conn.boardgame(169786 , ratingcomments=True, page=100, pagesize=100)
-    # return comment_results
+    page = 28
+    while page != 0:
+        comment_results = conn.boardgame(169786 , comments=True, page=page, pagesize=100)
+        time.sleep(np.random.choice(random_sec))
+        try:
+            comments = comment_results['items']['item']['comments']['comment']
+            print("comments:" ,comments)
+            page += 1
+        except KeyError:
+            print("no comments")
+            page = 0
 
-def get_ratings_comments(rc_dict):
-    pass
-    # comments = comment_results['items']['item']['comments']['comment']
+
+# def get_ratings_comments(rc_results):
+#     comments = rc_results['items']['item']['comments']['comment']
+#     print("comments:" ,comments)
+#     return comments
 
 def stats_to_mongo(stats_coll, game, game_id, description, categories, mechanics, kickstarter, designer, min_players, min_playtime, max_players, playingtime, min_age, best_num_players, pnb_total_votes, avg_rating, bayesavg_rating, avg_weight, num_comments, num_weights, rankings, users_rated, year_published):
         stats_coll.insert_one({"game": game,
@@ -158,6 +167,7 @@ def stats_to_mongo(stats_coll, game, game_id, description, categories, mechanics
                         })
 
 if __name__ == '__main__':
+    random_sec = np.random.uniform(5,7,[1000,])
     #open pickle file with ids,games,rating for use
     with open('data/game_ids_170516.pkl','rb') as fp:
         id_game_lst = pickle.load(fp)
@@ -170,7 +180,10 @@ if __name__ == '__main__':
     stats_coll = database.game_stats
     #making call to api for dictionary object
     conn = BGG()
-    call_id_lst = [x[0] for x in id_game_lst[:5]]
-    stat_results = get_stats_results()
-    stats_dict = stat_results['items']['item']
-    get_stats(id_game_dict, stat_results)
+    rc_results = get_ratings_comments_results()
+    # all_results = get_ratings_comments(rc_results)
+
+    # call_id_lst = [x[0] for x in id_game_lst[:5]]
+    # stat_results = get_stats_results()
+    # stats_dict = stat_results['items']['item']
+    # get_stats(id_game_dict, stat_results)
