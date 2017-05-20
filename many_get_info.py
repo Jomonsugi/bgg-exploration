@@ -32,11 +32,11 @@ def get_stats(id_game_dict, stat_results):
         #all link entries
         link = current_game_stats['link']
         #get board game categories
-        categories = [(int(x['id']),x['value']) for x in link if x['type'] == 'boardgamecategory']
+        categories = [(x['id'],x['value']) for x in link if x['type'] == 'boardgamecategory']
         if categories == []:
             categories = None
         #get board game mechanics
-        mechanics = [(int(x['id']),x['value']) for x in link if x['type'] == 'boardgamemechanic']
+        mechanics = [(x['id'],x['value']) for x in link if x['type'] == 'boardgamemechanic']
         if mechanics == []:
             mechanics = None
         #kickstarter?
@@ -44,7 +44,7 @@ def get_stats(id_game_dict, stat_results):
             kickstarter = 'yes'
         else: kickstarter = 'no'
         #get board game designer
-        designer = [(int(x['id']),x['value']) for x in link if x['type'] == 'boardgamedesigner']
+        designer = [(x['id'],x['value']) for x in link if x['type'] == 'boardgamedesigner']
         #min and max players
         min_players = int(current_game_stats['minplayers']['value'])
         max_players = int(current_game_stats['maxplayers']['value'])
@@ -61,7 +61,7 @@ def get_stats(id_game_dict, stat_results):
             if all(var in players for var in ['numplayers', 'result']):
                 best_num_players_votes.append((players['numplayers'], int(players['result'][0]['numvotes'])))
                 #winner of best number of players
-                best_num_players = max(best_num_players_votes,key=itemgetter(1))[0]
+                best_num_players = int(max(best_num_players_votes,key=itemgetter(1))[0])
             else:
                 #no room for difference in dict structure...
                 best_num_players = [(None, None)]
@@ -81,9 +81,9 @@ def get_stats(id_game_dict, stat_results):
         #gives back a list of tuples with (ranking type,ranking id, ranking)
         ranks = stats_dict['ratings']['ranks']['rank']
         if type(ranks) == list:
-            rankings = [(x['friendlyname'],x['id'],x['value']) for x in ranks]
+            rankings = [(x['friendlyname'],x['id'],int(x['value'])) for x in ranks]
         else:
-            rankings = (ranks['friendlyname'],ranks['id'],ranks['value'])
+            rankings = (ranks['friendlyname'],ranks['id'],int(ranks['value']))
         #number of ratings
         users_rated = int(stats_dict['ratings']['usersrated']['value'])
         #year published
@@ -122,24 +122,6 @@ def get_stats(id_game_dict, stat_results):
         '''
         stats_to_mongo(stats_coll, game, game_id, description, categories, mechanics, kickstarter, designer, min_players, max_players, min_playtime, playingtime, min_age, best_num_players, pnb_total_votes, avg_rating, bayesavg_rating, avg_weight, num_comments, num_weights, rankings, users_rated, year_published)
 
-def get_ratings_comments_results():
-    page = 28
-    while page != 0:
-        comment_results = conn.boardgame(169786 , comments=True, page=page, pagesize=100)
-        time.sleep(np.random.choice(random_sec))
-        try:
-            comments = comment_results['items']['item']['comments']['comment']
-            print("comments:" ,comments)
-            page += 1
-        except KeyError:
-            print("no comments")
-            page = 0
-
-
-# def get_ratings_comments(rc_results):
-#     comments = rc_results['items']['item']['comments']['comment']
-#     print("comments:" ,comments)
-#     return comments
 
 def stats_to_mongo(stats_coll, game, game_id, description, categories, mechanics, kickstarter, designer, min_players, min_playtime, max_players, playingtime, min_age, best_num_players, pnb_total_votes, avg_rating, bayesavg_rating, avg_weight, num_comments, num_weights, rankings, users_rated, year_published):
         stats_coll.insert_one({"game": game,
@@ -180,10 +162,8 @@ if __name__ == '__main__':
     stats_coll = database.game_stats
     #making call to api for dictionary object
     conn = BGG()
-    rc_results = get_ratings_comments_results()
-    # all_results = get_ratings_comments(rc_results)
 
-    # call_id_lst = [x[0] for x in id_game_lst[:5]]
-    # stat_results = get_stats_results()
-    # stats_dict = stat_results['items']['item']
-    # get_stats(id_game_dict, stat_results)
+    call_id_lst = [x[0] for x in id_game_lst[:3]]
+    stat_results = get_stats_results()
+    stats_dict = stat_results['items']['item']
+    get_stats(id_game_dict, stat_results)
