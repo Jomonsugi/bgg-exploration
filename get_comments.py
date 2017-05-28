@@ -30,7 +30,7 @@ def get_ratings_comments_results(call_id_lst, comments_coll):
                     # print("length:",len(comments))
                     for entry in comments:
                         try:
-                            rating = int(entry.get('rating'))
+                            rating = float(entry.get('rating'))
                         except ValueError:
                             rating = None
                         comments_coll.insert_one({"game": current_game,
@@ -53,8 +53,9 @@ def get_ratings_comments_results(call_id_lst, comments_coll):
                 page += 1
     return error_lst
 
+
 def to_pickle(error_lst):
-    with open('data/errors_5_23.pkl', 'wb') as fp:
+    with open('data/errors_5_28.pkl', 'wb') as fp:
         pickle.dump(error_lst, fp)
 
 if __name__ == '__main__':
@@ -66,14 +67,14 @@ if __name__ == '__main__':
 
     client = MongoClient()
     #database for comments to go into
-    database = client.bgg
+    database = client.bgg_test
     #collection for stats variables to go in
-    comments_coll = database.game_comments
+    comments_coll = database.game_comments_test
 
     id_game_dict = {x[0] : x[1] for x in id_game_lst[:-1]}
     #reverse lookup for dictionary
     # next(key for key, value in id_game_dict.items() if value == 'tzolk-mayan-calendar')
 
     #this range identifies the games that will be databased from the #id_game_lst
-    call_id_lst = [x[0] for x in id_game_lst[:100]]
+    call_id_lst = [x[0] for x in id_game_lst[:1000]]
     errors_lst = get_ratings_comments_results(call_id_lst, comments_coll)
