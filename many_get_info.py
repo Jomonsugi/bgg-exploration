@@ -108,7 +108,7 @@ def get_stats(id_game_dict, stat_results):
             # print("playing_time:", playing_time)
             # print("min_age:", min_age)
             # print("best_num_players:", best_num_players)
-            # print("pnb_total_votes:", bnp_total_votes)
+            # print("bnp_total_votes:", bnp_total_votes)
             # print("avg_rating:", avg_rating)
             # print("bayesavg_rating:", bayesavg_rating)
             # print("avg_weight:", avg_weight)
@@ -122,7 +122,7 @@ def get_stats(id_game_dict, stat_results):
 
             ### to return all variables ###
 
-            # return game, game_id, description, categories, mechanics, kickstarter, designer, min_players, min_playtime, playing_time, min_age, best_num_players, pnb_total_votes, avg_rating, bayesavg_rating, avg_weight, num_comments, num_weights, rankings, users_rated, year_published
+            # return game, game_id, description, categories, mechanics, kickstarter, designer, min_players, min_playtime, playing_time, min_age, best_num_players, bnp_total_votes, avg_rating, bayesavg_rating, avg_weight, num_comments, num_weights, rankings, users_rated, year_published
             '''
             to insert all variables as a document into the specified collection
             '''
@@ -149,7 +149,7 @@ def stats_to_mongo(stats_coll, game, game_id, description, categories, mechanics
                         "playing_time": playing_time,
                         "min_age": min_age,
                         "best_num_players": best_num_players,
-                        "pnb_total_votes": pnb_total_votes,
+                        "bnp_total_votes": bnp_total_votes,
                         "avg_rating": avg_rating,
                         "bayesavg_rating": bayesavg_rating,
                         "avg_weight": avg_weight,
@@ -211,10 +211,10 @@ if __name__ == '__main__':
     one_get_info.py is for this purpose
     '''
 
-    i_one = 0
-    i_two = 100
+    i_one = 100
+    i_two = 200
     call_id_lst = []
-    for r in range(10):
+    for r in range(9):
         call_id_lst.append([x[0] for x in id_game_lst[i_one:i_two]])
         i_one += 100
         i_two += 100
