@@ -23,7 +23,7 @@ def get_ratings_comments_results(call_id_lst, comments_coll):
             print("page:", page)
             try:
                 comment_results = conn.boardgame(game_id, comments=True, page=page, pagesize=100)
-                # print(comment_results)
+                print(comment_results)
                 try:
                     comments = comment_results['items']['item']['comments']['comment']
                     # print("comments:" ,comments)
@@ -76,5 +76,5 @@ if __name__ == '__main__':
     # next(key for key, value in id_game_dict.items() if value == 'tzolk-mayan-calendar')
 
     #this range identifies the games that will be databased from the #id_game_lst
-    call_id_lst = [x[0] for x in id_game_lst[:1000]]
+    call_id_lst = [x[0] for x in id_game_lst[:1]]
     errors_lst = get_ratings_comments_results(call_id_lst, comments_coll)

@@ -1,22 +1,45 @@
-import csv,re,sys,spacy
+import pandas as pd
 from pymongo import MongoClient
+import pickle
+import csv,re,sys,spacy
 from sklearn.feature_extraction.stop_words import ENGLISH_STOP_WORDS
 from nltk.corpus import stopwords
 from string import punctuation,printable
-import pickle
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer, TfidfTransformer
 import numpy as np
 from sklearn.metrics.pairwise import linear_kernel
 
-
-def load_documents():
+def data_to_pd():
     client = MongoClient()
     db = client.bgg
-    coll = db.game_stats
-    corpus = [game_stats['description'] for game_stats in coll.find()]
+    df = pd.DataFrame(list(db.game_comments.find()))
+    return df
+
+def comments_to_corpus(df):
+    game_ids = list(df.game_id.unique())
+    corpus = []
+    for id in game_ids:
+        corpus.append(' '.join(df[(df['game_id'] == id)]['comment'].tolist()))
+        print(len(corpus))
     return corpus
 
-def tokenize_string(doc):
+def corpus_to_pkl(corpus):
+    with open('data/comments_corpus.pkl', 'wb') as fp:
+        pickle.dump(corpus, fp)
+
+def make_corpus():
+    df = data_to_pd()
+    print("df_created")
+    corpus = comments_to_corpus(df)
+    corpus_to_pkl(corpus)
+    print("corpus is pickled")
+
+def load_comments_corpus():
+    with open('data/comments_corpus.pkl', 'rb') as fp:
+        comments_corpus = pickle.load(fp)
+    return comments_corpus
+
+def tokenize_string(doc, nlp):
     clean_doc = ""
     for char in doc:
         if char in printable:
@@ -35,11 +58,11 @@ def remove_stopwords(doc, stop_words):
     return no_stop
 
 def to_pickle(doc_lst):
-    with open('data/doc_lst.pkl', 'wb') as fp:
+    with open('data/comments_doc_lst.pkl', 'wb') as fp:
         pickle.dump(doc_lst,fp)
 
 def un_pickle():
-    with open('data/doc_lst.pkl', 'rb') as fp:
+    with open('data/comments_doc_lst', 'rb') as fp:
         processed = pickle.load(fp)
     return processed
 
@@ -52,8 +75,7 @@ def count_vec(processed):
 def tfideffed(processed):
     tfidfvect = TfidfVectorizer()
     tfidf_vectorized = tfidfvect.fit_transform(processed)
-    vocabulary = np.array(tfidfvect.get_feature_names())
-    return tfidf_vectorized, vocabulary
+    return tfidf_vectorized
 
 def tfidf_to_pickle(doc_lst):
     with open('data/desc_tfidf.pkl', 'wb') as fp:
@@ -65,12 +87,12 @@ def cos_sim(tfidf_vectorized):
 
 def process():
     #load all descriptions from mongo
-    corpus = load_documents()
+    comments_corpus = load_comments_corpus()
     #initiate stopwords
     nlp = spacy.load('en')
     STOPLIST = set(stopwords.words('english') + ["n't", "'s", "'m"] + list(ENGLISH_STOP_WORDS))
     #tokenize all descriptions
-    token_docs = [tokenize_string(doc) for doc in corpus]
+    token_docs = [tokenize_string(doc, nlp) for doc in comments_corpus]
     print("tokenized")
     #lemmatize
     lemmatized = [lemmatize_string(doc) for doc in token_docs]
@@ -82,13 +104,4 @@ def process():
     to_pickle(no_stop)
 
 if __name__ == '__main__':
-    processed = un_pickle()
-    #note that count_vec is done in the tfidf step below (combining a count and tranform step, but this way I have the vocab list if needed and the actual counts)
-    # count_mat = count_vec(processed)
-    #vocab = countvect.get_feature_names()
-    #to produce a term frequency index document frequncy matrx
-    tfidf_vectorized, vocabulary = tfideffed(processed)
-    #find cosine similarities
-    # cosine_similarities = cos_sim(tfidf_vectorized)
-    #pkl tfidf
-    # tfidf_to_pickle(tfidf_vectorized)
+    process()
