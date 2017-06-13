@@ -84,7 +84,7 @@ def predict_test_df(df_train, df_val, evaluator):
     optimized_model = bestModel
     return optimized_model
 
-def df_predict(df_test, optimized_model):
+def df_predict_on_test(df_test, optimized_model):
     #optimized hyperparemeters from predict_test_df
     seed = 1
     rank = 5
@@ -103,9 +103,54 @@ def df_predict(df_test, optimized_model):
     print 'RMSE for test data: {}'.format(rmse)
     return predictions
 
+def to_user_unrated_df(ugr_rdd, ugr_df, username="jomonsugi"):
+    client = MongoClient()
+    coll = client.bgg.game_comments
+    try:
+        idn = coll.find_one({'username':username})['user_id']
+    except TypeError:
+        print("username not found")
+        return
+    user_ugr = ugr_rdd.filter(lambda x: x[0] == idn)
+    #now get games that the user has not rated
+    rated_game_ids_lst = [x["game_id"] for x in list(coll.find({"username": username}))]
+    #create RDD where games are not rated which will include every entry
+    #that is not a game rated by the user_id
+    user_unrated_games_rdd = ugr_rdd.filter(lambda x: x[1] not in rated_game_ids_lst).map(lambda x: (idn, int(x[1]), x[2]))
+    #create data frame
+    schema = StructType( [
+        StructField('user_id', IntegerType()),
+        StructField('game_id', IntegerType()),
+        StructField('rating', DoubleType())
+        ])
+
+    user_unrated_df = spark.createDataFrame(user_unrated_games_rdd, schema)
+    name = 'rating'
+    udf = UserDefinedFunction(lambda x: 'new_value', DoubleType())
+    new_test_df = user_unrated_df.select(*[udf(column).alias(name) if column == name else column for column in user_unrated_df.columns])
+    new_test_df=new_test_df.na.fill(0.0)
+    #drop all duplicates, thus creating a df with only games unrated by user
+    unique_games_df = new_test_df.dropDuplicates(['game_id'])
+    return unique_games_df
+
+def predict_one_user(user_unrated_df, optimized_model):
+    #optimized hyperparemeters from predict_test_df
+    seed = 1
+    rank = 5
+    numIter = 200
+    lmbda = 0.2
+
+    one_user_predictions = optimized_model.transform(user_unrated_df)
+    print('TYPE:', type(one_user_predictions))
+    return one_user_predictions
+
 if __name__ == '__main__':
     ugr_df, ugr_rdd = mongo_to_rdd_df()
+
     df_train, df_val, df_test = train_val_test_df(ugr_df)
     evaluator = make_evaluator()
     optimized_model = predict_test_df(df_train, df_val, evaluator)
-    df_predict(df_test, optimized_model)
+    # df_predict_on_test(df_test, optimized_model)
+
+    user_unrated_df = to_user_unrated_df(ugr_rdd, ugr_df, username="ahalm")
+    one_user_predictions = predict_one_user(user_unrated_df, optimized_model)
