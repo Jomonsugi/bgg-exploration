@@ -1,9 +1,10 @@
+from sys import argv
 import pyspark as ps
 from pymongo import MongoClient
 import numpy as np
 import random
 from pyspark import SparkConf, SparkContext
-from pyspark.ml.recommendation import ALS
+from pyspark.ml.recommendation import ALS, ALSModel
 from pyspark.sql import SQLContext
 from pyspark.sql.functions import col
 from pyspark.ml.evaluation import RegressionEvaluator
@@ -18,6 +19,9 @@ from pyspark.sql.functions import UserDefinedFunction
 from pyspark.sql.types import DoubleType
 from pyspark.sql import Row
 from pyspark.sql.types import *
+import pickle
+import pandas as pd
+
 
 spark = ps.sql.SparkSession.builder \
         .master("local[*]") \
@@ -142,15 +146,73 @@ def predict_one_user(user_unrated_df, optimized_model):
 
     one_user_predictions = optimized_model.transform(user_unrated_df)
     print('TYPE:', type(one_user_predictions))
-    return one_user_predictions
+    sorted_predictions = one_user_predictions.sort("rating")
+    return sorted_predictions
+
+def un_pickle_user_dict():
+    with open('data/username_dict_p2.pickle', 'rb') as fp:
+        username_dict = pickle.load(fp)
+    return username_dict
+
+def to_all_users_df(ugr_rdd, ugr_df):
+    client = MongoClient()
+    coll = client.bgg.game_comments
+    username_dict = un_pickle_user_dict()
+    count = 1
+
+    schema = StructType( [
+        StructField('user_id', IntegerType()),
+        StructField('game_id', IntegerType()),
+        StructField('rating', DoubleType())
+        ])
+
+    all_users_recs_df = spark.createDataFrame(sc.emptyRDD(), schema)
+    print(all_users_recs_df)
+    for username, user_id in username_dict.items():
+        if count > 10:
+            break
+        print("current iteration:", count)
+        rated_game_ids_lst = [x["game_id"] for x in list(coll.find({"username": username}))]
+        # create RDD where games are not rated which will include every entry that is not a game rated by the user_id
+        user_unrated_games_rdd = ugr_rdd.filter(lambda x: x[1] not in rated_game_ids_lst).map(lambda x: (user_id, int(x[1]), x[2]))
+        #create data frame
+        user_unrated_df = spark.createDataFrame(user_unrated_games_rdd, schema)
+        name = 'rating'
+        udf = UserDefinedFunction(lambda x: 'new_value', DoubleType())
+        new_test_df = user_unrated_df.select(*[udf(column).alias(name) if column == name else column for column in user_unrated_df.columns])
+        new_test_df=new_test_df.na.fill(0.0)
+        #drop the duplicates and at this point we have a unique df for the currenty user in iteration
+        unique_games_df = new_test_df.dropDuplicates(['game_id'])
+        # now iterate again and use .union on current data frame, repeat and return
+        all_users_recs_df = all_users_recs_df.union(unique_games_df)
+        print("rows in dataframe:", all_users_recs_df.count())
+        count+=1
+    return all_users_recs_df
+
+def one_user_to_pd(one_user_predictions):
+    one_user_df = one_user_predictions.toPandas()
+    one_user_df.sort(columns='prediction')
+    one_user_df = one_user_df.drop('rating', 1)
+    return one_user_df
+
 
 if __name__ == '__main__':
     ugr_df, ugr_rdd = mongo_to_rdd_df()
-
-    df_train, df_val, df_test = train_val_test_df(ugr_df)
-    evaluator = make_evaluator()
-    optimized_model = predict_test_df(df_train, df_val, evaluator)
+    #
+    # df_train, df_val, df_test = train_val_test_df(ugr_df)
+    # evaluator = make_evaluator()
+    # optimized_model = predict_test_df(df_train, df_val, evaluator)
+    # optimized_model.save("/Users/micahshanks/Galvanize/capstone/data/als_model")
     # df_predict_on_test(df_test, optimized_model)
+    optimized_model = ALSModel.load("/Users/micahshanks/Galvanize/capstone/data/als_model")
 
-    user_unrated_df = to_user_unrated_df(ugr_rdd, ugr_df, username="ahalm")
+    _, user = argv
+    #now on to one user predictions
+    user_unrated_df = to_user_unrated_df(ugr_rdd, ugr_df, username=user)
     one_user_predictions = predict_one_user(user_unrated_df, optimized_model)
+
+    #and for all users to df
+    #note: this should not be done locally as it will take
+    #days
+    # all_users_recs_df = to_all_users_df(ugr_rdd, ugr_df)
+    one_user_df = one_user_to_pd(one_user_predictions)
