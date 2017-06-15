@@ -1,4 +1,3 @@
-from sys import argv
 import pyspark as ps
 from pymongo import MongoClient
 import numpy as np
@@ -195,26 +194,11 @@ def one_user_to_pd(one_user_predictions):
     one_user_df = one_user_df.drop('rating', 1)
     return one_user_df
 
-
-
-
-if __name__ == '__main__':
+#once function rules them all
+def for_flask(user_id):
     ugr_df, ugr_rdd = mongo_to_rdd_df()
-    #
-    # df_train, df_val, df_test = train_val_test_df(ugr_df)
-    # evaluator = make_evaluator()
-    # optimized_model = predict_test_df(df_train, df_val, evaluator)
-    # optimized_model.save("/Users/micahshanks/Galvanize/capstone/data/als_model")
-    # df_predict_on_test(df_test, optimized_model)
     optimized_model = ALSModel.load("/Users/micahshanks/Galvanize/capstone/data/als_model")
-
-    # _, user = argv
-    #now on to one user predictions
-    user_unrated_df = to_user_unrated_df(ugr_rdd, ugr_df, username='RomyCat')
+    user_unrated_df = to_user_unrated_df(ugr_rdd, ugr_df, username=user_id)
     one_user_predictions = predict_one_user(user_unrated_df, optimized_model)
-
-    #and for all users to df
-    #note: this should not be done locally as it will take
-    #days
-    # all_users_recs_df = to_all_users_df(ugr_rdd, ugr_df)
     one_user_df = one_user_to_pd(one_user_predictions)
+    return one_user_df
