@@ -12,10 +12,13 @@ def index():
 def button1():
     user_name = (request.form['user_input'])
     df = for_flask(user_name)
-    # return render_template('user_rec.html',tables=[df.to_html(classes='user_recs')],
-    # titles = ['na','Your Recommendations'])
     return render_template('user_rec.html', tables = df.to_html())
 
+@app.route('/boardgame_rec', methods=['POST'])
+def button2():
+    user_name = (request.form['user_input'])
+    df = for_flask(user_name)
+    return render_template('boardgame_rec.html', tables = df.to_html())
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080, debug=True)
