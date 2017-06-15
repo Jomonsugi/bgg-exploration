@@ -204,7 +204,7 @@ def one_user_to_pd(nmf_labeled_df, one_user_predictions):
     pickle_one_user_df(one_user_df)
     merged = pd.merge(nmf_labeled_df,one_user_df,on=['game_id','game_id'])
     merged = merged.sort(columns='prediction', ascending=False)
-    merged merged.set_index['Board Game Rank']
+    merged = merged.set_index(['Board Game Rank'])
     return merged
 
 #once function rules them all
