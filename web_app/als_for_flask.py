@@ -188,17 +188,31 @@ def to_all_users_df(ugr_rdd, ugr_df):
         count+=1
     return all_users_recs_df
 
-def one_user_to_pd(one_user_predictions):
+def un_pickle_labeled_df():
+    with open('../data/nmf_labeled_df_p2.pkl', 'rb') as fp:
+        nmf_labeled_df = pickle.load(fp)
+    return nmf_labeled_df
+
+def pickle_one_user_df(one_user_df):
+    with open('../data/one_user_df_p2.pkl', 'wb') as fp:
+        pickle.dump(one_user_df,fp, protocol=2)
+
+def one_user_to_pd(nmf_labeled_df, one_user_predictions):
+    nmf_labeled_df['game_id'] = nmf_labeled_df['game_id'].astype(int)
     one_user_df = one_user_predictions.toPandas()
-    one_user_df = one_user_df.sort(columns='prediction', ascending=False)
     one_user_df = one_user_df.drop('rating', 1)
-    return one_user_df
+    pickle_one_user_df(one_user_df)
+    merged = pd.merge(nmf_labeled_df,one_user_df,on=['game_id','game_id'])
+    merged = merged.sort(columns='prediction', ascending=False)
+    merged merged.set_index['Board Game Rank']
+    return merged
 
 #once function rules them all
 def for_flask(user_id):
+    nmf_labeled_df = un_pickle_labeled_df()
     ugr_df, ugr_rdd = mongo_to_rdd_df()
     optimized_model = ALSModel.load("/Users/micahshanks/Galvanize/capstone/data/als_model")
     user_unrated_df = to_user_unrated_df(ugr_rdd, ugr_df, username=user_id)
     one_user_predictions = predict_one_user(user_unrated_df, optimized_model)
-    one_user_df = one_user_to_pd(one_user_predictions)
+    one_user_df = one_user_to_pd(nmf_labeled_df, one_user_predictions)
     return one_user_df
