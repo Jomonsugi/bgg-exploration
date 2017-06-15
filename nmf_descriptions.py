@@ -75,13 +75,23 @@ def label_games(thumbnails, W):
     df = pd.DataFrame(list(db.game_stats.find()))
     category = [np.argmax(row) +1 for row in W]
     df['nmf'] = category
-    df = df[['Board Game Rank','game_id','game','description','nmf','playing_time','min_players', 'max_players', 'best_num_players', 'bayesavg_rating', 'avg_weight']]
+    df = df[['Board Game Rank','game_id','game','description','nmf','playing_time','min_players', 'max_players', 'best_num_players', 'avg_rating', 'avg_weight']]
+    df.columns = ['Board Game Rank','game_id','Game','Description','nmf','Playing Time','Min Players', 'Max Players', 'Best Num Players', 'avg_rating', 'Avg Weight']
+    return df
+
+def caps(df):
+    games = df['Game'].tolist()
+    pretty_games = []
+    for game in games:
+        game = game.replace("-", " ")
+        game = " ".join([x[:1].upper() + x[1:] for x in game.split()])
+        pretty_games.append(game)
+    df['Game'] = pretty_games
     return df
 
 def pickle_the_labeled_df(desc_df):
     with open('data/nmf_labeled_df_p2.pkl', 'wb') as fp:
         pickle.dump(desc_df,fp, protocol=2)
-
 
 def plot_cats(W):
     category = [np.argmax(row) for row in W]
@@ -115,4 +125,5 @@ if __name__ == '__main__':
 
     thumbnails = un_pickle_thumbs()
     desc_df = label_games(thumbnails, W)
+    desc_df = caps(desc_df)
     pickle_the_labeled_df(desc_df)
