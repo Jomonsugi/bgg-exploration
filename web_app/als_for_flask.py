@@ -204,8 +204,25 @@ def one_user_to_pd(nmf_labeled_df, one_user_predictions):
     pickle_one_user_df(one_user_df)
     merged = pd.merge(nmf_labeled_df,one_user_df,on=['game_id','game_id'])
     merged = merged.sort(columns='prediction', ascending=False)
-    merged = merged.set_index(['Board Game Rank'])
     return merged
+
+#putting at least one game from each top in the top 10
+def redistribute(one_user_df):
+    print(one_user_df.head())
+    idx = one_user_df.index.values.tolist()
+    nmf = list(one_user_df['nmf'])
+    pairs = tuple(zip(idx,nmf))
+    topics = [1,2,3,4,5,6,7,8]
+    nmf_8_idx = []
+    for pair in pairs:
+        if pair[1] in topics:
+            nmf_8_idx.append(pair[0])
+            topics.remove(pair[1])
+    print("indexes:", nmf_8_idx)
+    nmf_top_10 = one_user_df.iloc[nmf_8_idx]
+    dropped_df = one_user_df.drop(one_user_df.index[nmf_8_idx])
+    nmeffed_df = nmf_top_10.append(dropped_df)
+    return nmeffed_df
 
 #once function rules them all
 def for_flask(user_id):
@@ -215,4 +232,7 @@ def for_flask(user_id):
     user_unrated_df = to_user_unrated_df(ugr_rdd, ugr_df, username=user_id)
     one_user_predictions = predict_one_user(user_unrated_df, optimized_model)
     one_user_df = one_user_to_pd(nmf_labeled_df, one_user_predictions)
+    one_user_df = one_user_df.reset_index(drop=True)
+    one_user_df = redistribute(one_user_df)
+    print("LENGTH:",len(one_user_df))
     return one_user_df
