@@ -50,12 +50,13 @@
     <!-- Main jumbotron for a primary marketing message or call to action -->
     <div class="jumbotron">
       <div class="container">
-        <h1>Board Game Reccommender</h1>
-        <p>This is an app that gives board game reccommendations to current
-          <a href="https://boardgamegeek.com/">Board Game Geek</a> members. Not a member? If you have a favorite game it will give you a reccommendation as well!</p>
-        <p><a class="btn btn-primary btn-lg" href="#" role="button">Learn more &raquo;</a></p>
+        <h1>Board Game Recommender</h1>
+        <p>This is an app that gives board game recommendations to current
+          <a href="https://boardgamegeek.com/">Board Game Geek</a> members. Not a member or want a different kind of recommendation? Entering your favorite game will work as well!</p>
+        <p><a class="btn btn-primary btn-lg" href="#learn_more" role="button">Learn more &raquo;</a></p>
       </div>
     </div>
+
 
     <div class="container">
       <!-- Example row of columns -->
@@ -63,31 +64,76 @@
         <div class="col-md-4">
           <h2>BGG Members</h2>
           <p>If you are a member of BGG and have rated a game before, please enter your username below. </p>
-            <div class="form-group">
+            <div class="form-group col-md-8">
               <form action='/user_rec' method='POST' id='submitform'>
                 <input type='text', placeholder='user id'  name='user_input'>
-                <button type="submit" class="btn btn-success">Reccommend</button>
+                <button type="submit" class="btn btn-success">Recommend</button>
+                <br><br>
+                <h2>Other Options</h2>
+                <h5>Best Number of Players</h5>
+                <select name="best_num_player">
+                  <option value="0">all</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5+</option>
+                </select>
+                <br><br>
+                <h5>Minimum Play Time (minutes)</h5>
+                <input type='text', placeholder='min_time'  name='user_input'>
+                <br><br>
+                <h5>Maximum Play Time (minutes)</h5>
+                <input type='text', placeholder='max_time'  name='user_input'>
               </form>
             </div>
         </div>
 
       <div class="col-md-4">
         <h2>Another way...</h2>
-        <p>If you haven't rated any games on BGG, or if you'd like to check out a different type of reccomendation, try entering a board game you like playing below! </p>
+        <p>If you haven't rated any games on BGG, or if you'd like to check out a different type of recomendation, try entering a board game you like playing below! </p>
           <div class="form-group">
             <form action='/boardgame_rec' method='POST' id='submitform'>
             <input type='text', placeholder='boardgame'  name='user_input'>
-            <button type="submit" class="btn btn-success">Reccommend</button>
+            <button type="submit" class="btn btn-success">Recommend</button>
             </form>
         </div>
       </div>
 
+
       <div class="col-md-4">
         <h2>Heading</h2>
-        <p>Need to know a little bit more about the methods used to reccommend a board game to you?.</p>
-        <p><a class="btn btn-default" href="#" role="button">Github Repo &raquo;</a></p>
+        <p>Need to know a little bit more about the methods used to recommend a board game to you?.</p>
+        <p><a class="btn btn-default" href="https://github.com/Jomonsugi/bgg-exploration/#readme" role="button">Github Repo &raquo;</a></p>
       </div>
       </div>
+
+
+    <br><br>
+    <br><br>
+    <br><br>
+    <br><br>
+    <br><br>
+
+    <section id="learn_more"
+    <hr class="featurette-divider">
+
+    <div class="row featurette">
+      <div class="col-md-9">
+        <h2 class="featurette-heading">Deep Learning. <span class="text-muted">You will blow you're load</span></h2>
+        <p class="lead">Donec ullamcorper nulla non metus auctor fringilla. Vestibulum id ligula porta felis euismod semper. Praesent commodo cursus magna, vel scelerisque nisl consectetur. Fusce dapibus, tellus ac cursus commodo.</p>
+      </div>
+      </div>
+
+
+      <br><br>
+      <br><br>
+      <br><br>
+      <br><br>
+      <br><br>
+      <br><br>
+      <br><br>
+
 
 
       <hr>
@@ -95,8 +141,8 @@
       <footer>
         <p>brought to you by Jomonsugi</p>
       </footer>
+    </div> <!-- /container -->
 
-      </div> <!-- /container -->
 
     <!-- Bootstrap core JavaScript
     ================================================== -->

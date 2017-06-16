@@ -208,7 +208,6 @@ def one_user_to_pd(nmf_labeled_df, one_user_predictions):
 
 #putting at least one game from each top in the top 10
 def redistribute(one_user_df):
-    print(one_user_df.head())
     idx = one_user_df.index.values.tolist()
     nmf = list(one_user_df['nmf'])
     pairs = tuple(zip(idx,nmf))
@@ -225,14 +224,28 @@ def redistribute(one_user_df):
     return nmeffed_df
 
 #once function rules them all
-def for_flask(user_id):
+def for_flask(user_id, best_num_player=0, min_time=0, max_time=500000):
     nmf_labeled_df = un_pickle_labeled_df()
     ugr_df, ugr_rdd = mongo_to_rdd_df()
     optimized_model = ALSModel.load("/Users/micahshanks/Galvanize/capstone/data/als_model")
     user_unrated_df = to_user_unrated_df(ugr_rdd, ugr_df, username=user_id)
     one_user_predictions = predict_one_user(user_unrated_df, optimized_model)
     one_user_df = one_user_to_pd(nmf_labeled_df, one_user_predictions)
-    one_user_df = one_user_df.reset_index(drop=True)
-    one_user_df = redistribute(one_user_df)
-    print("LENGTH:",len(one_user_df))
-    return one_user_df
+    # one_user_df = one_user_df.reset_index()
+    one_user_df = one_user_df = one_user_df.loc[one_user_df['min_playtime'] >= min_time]
+    one_user_df = one_user_df = one_user_df.loc[one_user_df['max_playtime'] <= min_time]
+    one_user_df = one_user_df.reset_index()
+
+    if best_num_player == 0:
+        one_user_df = redistribute(one_user_df)
+    if best_num_player == 5:
+        one_user_df = one_user_df.loc[one_user_df['Best Num Players'] > 4]
+        one_user_df = one_user_df.reset_index()
+        one_user_df = redistribute(one_user_df)
+    else:
+        one_user_df = one_user_df.loc[one_user_df['Best Num Players'] == int(best_num_player)]
+        one_user_df = one_user_df.reset_index()
+        one_user_df = redistribute(one_user_df)
+
+    rendered_df = one_user_df[['Game','Playing Time', 'Min Players', 'Max Players', 'Best Num Players' ,'Avg Weight']]
+    return rendered_df
