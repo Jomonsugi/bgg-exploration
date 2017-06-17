@@ -71,15 +71,24 @@
                 <br><br>
                 <h2>Other Options</h2>
                 <h5>Best Number of Players</h5>
-                <select name="best_num_player">
-                  <option selected="selected">Any</option>
-                  <option value="1">1</option>
-                  <option value="2">2</option>
-                  <option value="3">3</option>
-                  <option value="4">4</option>
-                  <option value="5">5+</option>
-                </select>
-                <br><br>
+                <div class="checkbox">
+                  <label><input type="checkbox" name="check" value="Any">Any</label>
+                </div>
+                <div class="checkbox">
+                  <label><input type="checkbox" name="check" value="1">1</label>
+                </div>
+                <div class="checkbox">
+                  <label><input type="checkbox" name="check" value="2">2</label>
+                </div>
+                <div class="checkbox">
+                  <label><input type="checkbox" name="check" value="3">3</label>
+                </div>
+                <div class="checkbox">
+                  <label><input type="checkbox" name="check" value="4">4</label>
+                </div>
+                <div class="checkbox">
+                  <label><input type="checkbox" name="check" value="5">5+</label>
+                </div>
                 <h5>Minimum Play Time (minutes)</h5>
                 <input type="text", placeholder='0'  name='min_time'>
                 <br><br>

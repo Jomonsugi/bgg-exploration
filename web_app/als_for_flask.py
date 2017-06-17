@@ -225,40 +225,37 @@ def redistribute(one_user_df):
 
 #once function rules them all
 def for_flask(user_id, best_num_player, min_time, max_time):
-    print(best_num_player)
     print(min_time)
     print(max_time)
+    print(best_num_player)
+    print(len(best_num_player))
     nmf_labeled_df = un_pickle_labeled_df()
     ugr_df, ugr_rdd = mongo_to_rdd_df()
     optimized_model = ALSModel.load("/Users/micahshanks/Galvanize/capstone/data/als_model")
     user_unrated_df = to_user_unrated_df(ugr_rdd, ugr_df, username=user_id)
     one_user_predictions = predict_one_user(user_unrated_df, optimized_model)
     one_user_df = one_user_to_pd(nmf_labeled_df, one_user_predictions)
-
+    #for minimum and maximum time
     if min_time:
         min_time = int(min_time)
-        one_user_df = one_user_df = one_user_df.loc[one_user_df['Playing Time'] > min_time]
+        one_user_df = one_user_df.loc[one_user_df['Playing Time'] > min_time]
     if max_time:
         max_time = int(max_time)
-        one_user_df = one_user_df = one_user_df.loc[one_user_df['Playing Time'] < max_time]
+        one_user_df = one_user_df.loc[one_user_df['Playing Time'] < max_time]
         one_user_df = one_user_df.reset_index()
-
-    if best_num_player == 5:
-        best_num_player = int(best_num_player)
-        one_user_df = one_user_df.loc[one_user_df['Best Num Players'] > 4]
+    #for best number of players
+    if 'Any' in best_num_player:
+        best_num_player = [1,2,3,4,5]
+    best_num_player = [int(x) for x in best_num_player]
+    if 5 in best_num_player:
+        one_user_df = one_user_df.loc[(one_user_df['Best Num Players'] > 5) | one_user_df['Best Num Players'].isin(best_num_player)]
         one_user_df = one_user_df.reset_index()
-        one_user_df = redistribute(one_user_df)
-        # rendered_df = one_user_df[['Game','Playing Time', 'Min Players', 'Max Players', 'Best Num Players' ,'Avg Weight']]
-        return one_user_df
-
-    if best_num_player in [1,2,3,4]:
-        best_num_player = int(best_num_player)
-        one_user_df = one_user_df.loc[one_user_df['Best Num Players'] == best_num_player]
+        print(one_user_df.head())
+    else:
+        one_user_df = one_user_df.loc[(one_user_df['Best Num Players'].isin(best_num_player))]
         one_user_df = one_user_df.reset_index()
-        one_user_df = redistribute(one_user_df)
-        # rendered_df = one_user_df[['Game','Playing Time', 'Min Players', 'Max Players', 'Best Num Players' ,'Avg Weight']]
-        return one_user_df
-
+        print(one_user_df.head())
+    #now we are ready to redistribute the top 8 based on topics
     one_user_df = redistribute(one_user_df)
-    # rendered_df = one_user_df[['Game','Playing Time', 'Min Players', 'Max Players', 'Best Num Players' ,'Avg Weight']]
+    rendered_df = one_user_df[['Game','Playing Time', 'Min Players', 'Max Players', 'Best Num Players' ,'Avg Weight']]
     return one_user_df
