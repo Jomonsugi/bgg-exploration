@@ -14,7 +14,7 @@ def button1():
     best_num_player = (request.form['best_num_player'])
     min_time = (request.form['min_time'])
     max_time = (request.form['max_time'])
-    df = for_flask(user_name, best_num_player, min_time=1, max_time=5000000)
+    df = for_flask(user_name, best_num_player, min_time, max_time)
     return render_template('user_rec.html', tables = df.to_html(index=False))
 
 @app.route('/boardgame_rec', methods=['POST'])
@@ -23,7 +23,7 @@ def button2():
     best_num_player = (request.form['best_num_player'])
     min_time = (request.form['min_time'])
     max_time = (request.form['max_time'])
-    df = for_flask(user_id, best_num_player, min_time=1, max_time=5000000)
+    df = for_flask(user_id, best_num_player, min_time, max_time)
     return render_template('boardgame_rec.html', tables = df.to_html(index=False))
 
 if __name__ == '__main__':

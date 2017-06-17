@@ -224,7 +224,7 @@ def redistribute(one_user_df):
     return nmeffed_df
 
 #once function rules them all
-def for_flask(user_id, best_num_player, min_time=1, max_time=5000000):
+def for_flask(user_id, best_num_player, min_time, max_time):
     print(best_num_player)
     print(min_time)
     print(max_time)
@@ -234,21 +234,31 @@ def for_flask(user_id, best_num_player, min_time=1, max_time=5000000):
     user_unrated_df = to_user_unrated_df(ugr_rdd, ugr_df, username=user_id)
     one_user_predictions = predict_one_user(user_unrated_df, optimized_model)
     one_user_df = one_user_to_pd(nmf_labeled_df, one_user_predictions)
-    # one_user_df = one_user_df.reset_index()
-    min_time = int(min_time)
-    max_time = int(max_time)
-    one_user_df = one_user_df = one_user_df.loc[one_user_df['Playing Time'] > min_time]
-    one_user_df = one_user_df = one_user_df.loc[one_user_df['Playing Time'] < max_time]
-    one_user_df = one_user_df.reset_index()
-    if best_num_player == 0:
-        one_user_df = redistribute(one_user_df)
+
+    if min_time:
+        min_time = int(min_time)
+        one_user_df = one_user_df = one_user_df.loc[one_user_df['Playing Time'] > min_time]
+    if max_time:
+        max_time = int(max_time)
+        one_user_df = one_user_df = one_user_df.loc[one_user_df['Playing Time'] < max_time]
+        one_user_df = one_user_df.reset_index()
+
     if best_num_player == 5:
+        best_num_player = int(best_num_player)
         one_user_df = one_user_df.loc[one_user_df['Best Num Players'] > 4]
         one_user_df = one_user_df.reset_index()
         one_user_df = redistribute(one_user_df)
-    else:
-        one_user_df = one_user_df.loc[one_user_df['Best Num Players'] == int(best_num_player)]
+        # rendered_df = one_user_df[['Game','Playing Time', 'Min Players', 'Max Players', 'Best Num Players' ,'Avg Weight']]
+        return one_user_df
+
+    if best_num_player in [1,2,3,4]:
+        best_num_player = int(best_num_player)
+        one_user_df = one_user_df.loc[one_user_df['Best Num Players'] == best_num_player]
         one_user_df = one_user_df.reset_index()
         one_user_df = redistribute(one_user_df)
-    rendered_df = one_user_df[['Game','Playing Time', 'Min Players', 'Max Players', 'Best Num Players' ,'Avg Weight']]
-    return rendered_df
+        # rendered_df = one_user_df[['Game','Playing Time', 'Min Players', 'Max Players', 'Best Num Players' ,'Avg Weight']]
+        return one_user_df
+
+    one_user_df = redistribute(one_user_df)
+    # rendered_df = one_user_df[['Game','Playing Time', 'Min Players', 'Max Players', 'Best Num Players' ,'Avg Weight']]
+    return one_user_df
