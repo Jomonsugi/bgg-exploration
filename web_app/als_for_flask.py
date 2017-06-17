@@ -225,10 +225,10 @@ def redistribute(one_user_df):
 
 #once function rules them all
 def for_flask(user_id, best_num_player, min_time, max_time):
-    print(min_time)
-    print(max_time)
-    print(best_num_player)
-    print(len(best_num_player))
+    # print(min_time)
+    # print(max_time)
+    # print(best_num_player)
+    # print(len(best_num_player))
     nmf_labeled_df = un_pickle_labeled_df()
     ugr_df, ugr_rdd = mongo_to_rdd_df()
     optimized_model = ALSModel.load("/Users/micahshanks/Galvanize/capstone/data/als_model")
@@ -244,7 +244,7 @@ def for_flask(user_id, best_num_player, min_time, max_time):
         one_user_df = one_user_df.loc[one_user_df['Playing Time'] < max_time]
         one_user_df = one_user_df.reset_index()
     #for best number of players
-    if 'Any' in best_num_player:
+    if 'Any' in best_num_player or best_num_player == []:
         best_num_player = [1,2,3,4,5]
     best_num_player = [int(x) for x in best_num_player]
     if 5 in best_num_player:
@@ -258,4 +258,4 @@ def for_flask(user_id, best_num_player, min_time, max_time):
     #now we are ready to redistribute the top 8 based on topics
     one_user_df = redistribute(one_user_df)
     rendered_df = one_user_df[['Game','Playing Time', 'Min Players', 'Max Players', 'Best Num Players' ,'Avg Weight']]
-    return one_user_df
+    return rendered_df.iloc[0:20,:]
