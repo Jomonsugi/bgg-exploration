@@ -69,14 +69,25 @@ def un_pickle_thumbs():
         thumbnails = pickle.load(fp)
     return thumbnails
 
-def label_games(thumbnails, W):
+def un_pickle_official():
+    with open('data/official_game_dict.pkl', 'rb') as fp:
+        official = pickle.load(fp)
+    return official
+
+def label_games(W):
     client = MongoClient()
     db = client.bgg
     df = pd.DataFrame(list(db.game_stats.find()))
     category = [np.argmax(row) +1 for row in W]
     df['nmf'] = category
-    df = df[['Board Game Rank','game_id','game','description','nmf','playing_time','min_players', 'max_players', 'best_num_players', 'avg_rating', 'avg_weight']]
-    df.columns = ['Board Game Rank','game_id','Game','Description','nmf','Playing Time','Min Players', 'Max Players', 'Best Num Players', 'avg_rating', 'Avg Weight']
+    official = un_pickle_official()
+    official_df = pd.DataFrame(list(official.items()))
+    official_df.columns = ['game_id','Game']
+    df_id_lst = df['game_id'].tolist()
+    official_df = official_df[official_df['game_id'].isin(df_id_lst)]
+    df = pd.merge(df, official_df, on='game_id')
+    df = df[['Board Game Rank','game_id','game', 'Game','description','nmf','playing_time','min_players', 'max_players', 'best_num_players', 'avg_rating', 'avg_weight']]
+    df.columns = ['Board Game Rank','game_id','bgg_game', 'Game','Description','nmf','Playing Time','Min Players', 'Max Players', 'Best Num Players', 'avg_rating', 'Avg Weight']
     return df
 
 def caps(df):
@@ -123,7 +134,7 @@ if __name__ == '__main__':
     # # rec_error_plot(rec_err_lst)
     # plot_bar(H, vocabulary)
 
-    thumbnails = un_pickle_thumbs()
-    desc_df = label_games(thumbnails, W)
-    desc_df = caps(desc_df)
+    # thumbnails = un_pickle_thumbs()
+    desc_df = label_games(W)
+    # desc_df = caps(desc_df)
     pickle_the_labeled_df(desc_df)
