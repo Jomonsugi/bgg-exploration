@@ -15,7 +15,7 @@ def get_data():
 
 def mechanics(df):
     column_lst = list(df.columns.values)
-    # print(column_lst)
+    print(df.head())
     mechanics = [m for m in column_lst if 'mechanic' in m and m != 'mechanics']
     indexed_df = df.set_index(['game'])
     df_mechs = indexed_df[mechanics]
@@ -95,4 +95,5 @@ def for_flask_content(board_game, best_num_player, min_time, max_time):
     return rendered_df.iloc[1:21,:]
 
 if __name__ == '__main__':
-    rendered_df = for_flask(board_game)
+    pass
+    # rendered_df = for_flask(board_game)
