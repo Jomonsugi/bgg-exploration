@@ -223,18 +223,21 @@ def redistribute(one_user_df):
     nmeffed_df = nmf_top_10.append(dropped_df)
     return nmeffed_df
 
+def prep_columns(df):
+    df = df[['Board Game Rank','game_id','game','description','playing_time','min_players', 'max_players', 'best_num_players', 'avg_rating', 'avg_weight', 'nmf', 'Game']]
+    df.columns = ['Board Game Rank','game_id','game','Description','Playing Time','Min Players', 'Max Players', 'Best Num Players', 'avg_rating', 'Avg Weight', 'nmf', 'Game']
+    return df
+
 #once function rules them all
 def for_flask(user_id, best_num_player, min_time, max_time):
-    # print(min_time)
-    # print(max_time)
-    # print(best_num_player)
-    # print(len(best_num_player))
     nmf_labeled_df = un_pickle_labeled_df()
     ugr_df, ugr_rdd = mongo_to_rdd_df()
     optimized_model = ALSModel.load("/Users/micahshanks/Galvanize/capstone/data/als_model")
     user_unrated_df = to_user_unrated_df(ugr_rdd, ugr_df, username=user_id)
     one_user_predictions = predict_one_user(user_unrated_df, optimized_model)
     one_user_df = one_user_to_pd(nmf_labeled_df, one_user_predictions)
+    one_user_df = prep_columns(one_user_df)
+    print(one_user_df.head())
     #for minimum and maximum time
     if min_time:
         min_time = int(min_time)

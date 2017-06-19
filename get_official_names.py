@@ -24,10 +24,17 @@ def get_game_names(pages=1):
         page_number+=1
     return official_name_dict
 
+def replace(official):
+    for k,v in official.items():
+        v = v.replace('&amp;', '&')
+        official[k] = v
+    return official
+
 def to_pickle(official):
     with open('data/official_game_dict.pkl', 'wb') as fp:
         pickle.dump(official, fp, protocol=2)
 
 if __name__ == '__main__':
-    official = get_game_names(21)
+    # official = get_game_names(21)
+    # official = replace(official)
     to_pickle(official)

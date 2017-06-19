@@ -55,7 +55,7 @@ def un_pickle_labeled_df():
         nmf_labeled_df = pickle.load(fp)
     return nmf_labeled_df
 
-def for_flask(board_game):
+def for_flask_content(board_game, best_num_player, min_time, max_time):
     nmf_labeled_df = un_pickle_labeled_df()
     choices = nmf_labeled_df['Game'].tolist()
     board_game = process.extract(board_game, choices, limit=1)
@@ -70,9 +70,29 @@ def for_flask(board_game):
     idx = int((df.Game[df.Game == board_game].index.tolist())[0])
     sorted_idx = list(distance_matrix[idx].argsort()[::-1])
     sorted_df = df.iloc[sorted_idx,:]
-    rendered_df = prep_columns(sorted_df)
-    rendered_df = rendered_df[['Game','Playing Time', 'Min Players', 'Max Players', 'Best Num Players' ,'Avg Weight']]
-    return rendered_df.iloc[1:21,:], board_game
+    one_user_df = prep_columns(sorted_df)
+    #for minimum and maximum time
+    if min_time:
+        min_time = int(min_time)
+        one_user_df = one_user_df.loc[one_user_df['Playing Time'] > min_time]
+    if max_time:
+        max_time = int(max_time)
+        one_user_df = one_user_df.loc[one_user_df['Playing Time'] < max_time]
+        one_user_df = one_user_df.reset_index()
+    #for best number of players
+    if 'Any' in best_num_player or best_num_player == []:
+        best_num_player = [1,2,3,4,5]
+    best_num_player = [int(x) for x in best_num_player]
+    if 5 in best_num_player:
+        one_user_df = one_user_df.loc[(one_user_df['Best Num Players'] > 5) | one_user_df['Best Num Players'].isin(best_num_player)]
+        one_user_df = one_user_df.reset_index()
+        print(one_user_df.head())
+    else:
+        one_user_df = one_user_df.loc[(one_user_df['Best Num Players'].isin(best_num_player))]
+        one_user_df = one_user_df.reset_index()
+        print(one_user_df.head())
+    rendered_df = one_user_df[['Game','Playing Time', 'Min Players', 'Max Players', 'Best Num Players' ,'Avg Weight']]
+    return rendered_df.iloc[1:21,:]
 
 if __name__ == '__main__':
-    rendered_df, board_game = for_flask(board_game)
+    rendered_df = for_flask(board_game)

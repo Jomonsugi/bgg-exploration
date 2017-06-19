@@ -52,7 +52,7 @@
       <div class="container">
         <h1>Board Game Recommender</h1>
         <p>This is an app that gives board game recommendations to current
-          <a href="https://boardgamegeek.com/">Board Game Geek</a> members. Not a member or want a different kind of recommendation? Entering your favorite game will work as well!</p>
+          <a href="https://boardgamegeek.com/">Board Game Geek</a> members. If you are not a member or want a different kind of recommendation, you're favorite game will work as well!</p>
         <p><a class="btn btn-primary btn-lg" href="#learn_more" role="button">Learn more &raquo;</a></p>
       </div>
     </div>
@@ -66,7 +66,7 @@
           <p>If you are a member of BGG and have rated a game before, please enter your username below. </p>
             <div class="form-group col-md-8">
               <form action='/user_rec' method='POST' id='submitform'>
-                <input type='text', placeholder='user id'  name='user_input'>
+                <input type='text', placeholder='BGG User Id'  name='user_input'>
                 <button type="submit" class="btn btn-success">Recommend</button>
                 <br><br>
                 <h2>Other Options</h2>
@@ -101,13 +101,39 @@
       <div class="col-md-4">
         <h2>Another way...</h2>
         <p>If you haven't rated any games on BGG, or if you'd like to check out a different type of recomendation, try entering a board game you like playing below! </p>
-          <div class="form-group">
-            <form action='/boardgame_rec' method='POST' id='submitform'>
-            <input type='text', placeholder='boardgame'  name='user_input'>
+        <div class="form-group col-md-8">
+          <form action='/boardgame_rec' method='POST' id='submitform'>
+            <input type='text', placeholder='Board Game'  name='user_input'>
             <button type="submit" class="btn btn-success">Recommend</button>
-            </form>
+            <br><br>
+            <h2>Other Options</h2>
+            <h5>Best Number of Players</h5>
+            <div class="checkbox">
+              <label><input type="checkbox" name="check" value="Any">Any</label>
+            </div>
+            <div class="checkbox">
+              <label><input type="checkbox" name="check" value="1">1</label>
+            </div>
+            <div class="checkbox">
+              <label><input type="checkbox" name="check" value="2">2</label>
+            </div>
+            <div class="checkbox">
+              <label><input type="checkbox" name="check" value="3">3</label>
+            </div>
+            <div class="checkbox">
+              <label><input type="checkbox" name="check" value="4">4</label>
+            </div>
+            <div class="checkbox">
+              <label><input type="checkbox" name="check" value="5">5+</label>
+            </div>
+            <h5>Minimum Play Time (minutes)</h5>
+            <input type="text", placeholder='0'  name='min_time'>
+            <br><br>
+            <h5>Maximum Play Time (minutes)</h5>
+            <input type="text", placeholder='500000'  name='max_time'>
+          </form>
         </div>
-      </div>
+    </div>
 
 
       <div class="col-md-4">
