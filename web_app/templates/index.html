@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <script src="https://use.fontawesome.com/8f66eee967.js"></script>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -58,10 +59,10 @@
     </div>
 
 
-    <div class="container">
+    <div class="container" href="#recs">
       <!-- Example row of columns -->
       <div class="row">
-        <div class="col-md-4">
+        <div class="col-md-6">
           <h2>BGG Members</h2>
           <p>If you are a member of BGG and have rated a game before, please enter your username below. </p>
             <div class="form-group col-md-8">
@@ -98,7 +99,7 @@
             </div>
         </div>
 
-      <div class="col-md-4">
+      <div class="col-md-6">
         <h2>Another way...</h2>
         <p>If you haven't rated any games on BGG, or if you'd like to check out a different type of recomendation, try entering a board game you like playing below! </p>
         <div class="form-group col-md-8">
@@ -134,49 +135,54 @@
           </form>
         </div>
     </div>
-
-
-      <div class="col-md-4">
-        <h2>Heading</h2>
-        <p>Need to know a little bit more about the methods used to recommend a board game to you?.</p>
-        <p><a class="btn btn-default" href="https://github.com/Jomonsugi/bgg-exploration/#readme" role="button">Github Repo &raquo;</a></p>
-      </div>
-      </div>
-
+    </div>
 
     <br><br>
     <br><br>
     <br><br>
-    <br><br>
-    <br><br>
-
     <section id="learn_more"
     <hr class="featurette-divider">
+    <br><br>
 
     <div class="row featurette">
       <div class="col-md-9">
-        <h2 class="featurette-heading">Deep Learning. <span class="text-muted">You will blow you're load</span></h2>
-        <p class="lead">Donec ullamcorper nulla non metus auctor fringilla. Vestibulum id ligula porta felis euismod semper. Praesent commodo cursus magna, vel scelerisque nisl consectetur. Fusce dapibus, tellus ac cursus commodo.</p>
+        <h2 class="featurette-heading">Recommendation Systems  <span class="text-muted">An Overview</span></h2>
+        <p class="lead">This app provides two different types of recommendation systems. </p>
+        <h4>Collaborative </h4>
+        <p>This type is used in the section labeled "BGG Members". This approach finds other users with similar preferences (based on ratings) using the matrix factorization method called Alternative Least Squares. An optimized model then predicts what you would rate games you have not rated before, then outputs a filtered list with those rated the most highly. Further, the descriptions of all the games are transformed using natural language processing techniques, and then through nonnegative matrix factorization, games are segmented into categories. The top games in the list are then slightly modified to be diversified across these categories. This approach gives you a currated list of twenty games that you should definitely check out if you have not before! Notice you have control over filtering your list a bit further. Options include: "Best Number of Players" (as voted by BGG members), "Minimum Play Time (minutes)" for those of you who like a longer game, and "Maximum Play Time (minutes)" if you happen to be in a time crunch (or just destest long games).</p>
+        <br><br>
+        <h4>Content-based </h4>
+        <p>If you are not a BGG member that has actively rated games on the site or you just want to try a different type of recommendation out, there is a section labeled "Another way..." above. This is a simpler method, but still a powerful one. Board Game Geek classifies games as belonging to a variety of "Mechanics" and "Categories". There are currently 51 mechanics and 80 categories used to segment games on the BGG site. Games are classified into multiple mechanics and categories. Using these combinations, a hamming distance matrix is derrived, which in turn can be used to find games that are "closest" to each other. If you type in "Pandemic Legacy Season 1" into this recommendation engine, you will notice your list has a lot of Pandemic variations on it! That is because they share many of the same attributes. However, you can there will be plenty of other games on the list and more unique games might return more interesting results. The same user specified options available to the collaborative recommender are available here as well.
+        <br><br>
+        <br><br>
+        <h4>Detailed Information </h4>
+        You'll notice another button labeled "<a href="https://github.com/Jomonsugi/bgg-exploration/#readme">Github Repo</a>". This project began while I was a data science student at a place called
+        <a href="https://www.galvanize.com/denver-platte">Galvanize</a>. If you would like to dig in a bit more, my readme section explains in further detail my process and contains the code that I used to build the recommendation systems and this site. If you have any further questions, please do not hesitate to contact me.
+        <br><br>
       </div>
       </div>
-
-
-      <br><br>
-      <br><br>
-      <br><br>
-      <br><br>
-      <br><br>
-      <br><br>
-      <br><br>
-
-
 
       <hr>
 
+      <div class="container">
+      <div class="row">
       <footer>
         <p>brought to you by Jomonsugi</p>
+          <div class="col-lg-4 text-center">
+            <i class="fa fa-linkedin-square" style="font-size:50px" aria-hidden="true"></i>
+            <p><a style='color:black' href="https://www.linkedin.com/in/shanksmicah/" target="_blank">linkedin.com</a></p>
+          </div>
+          <div class="col-lg-4 text-center">
+            <i class="fa fa-file-text" style="font-size:45px"></i>
+            <p><a style="color:black" href="../static/img/resume_mshanks.pdf" target="_blank">Resume</a></p>
+          </div>
+          <div class="col-lg-4 text-center">
+            <i class="fa fa-github" style="font-size:50px" aria-hidden="true"></i>
+            <p><a style="color:black" href="https://github.com/Jomonsugi/bgg-exploration/#readme" target="_blank">Github Repo</a></p>
+          </div>
+        </div>
       </footer>
-    </div> <!-- /container -->
+      </div>
 
 
     <!-- Bootstrap core JavaScript
