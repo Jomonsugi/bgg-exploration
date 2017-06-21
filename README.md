@@ -1,17 +1,21 @@
-# Board Game Geek Recommender 
+# Board Game Geek Recommender
 
 ### Goal
 
-Build a collaborative recommendation system for current users of boardgamegeek.com, further filtering the results by categories gained from the game descriptions using natural language processing, board game statistics, and user input.
+1. Build a collaborative recommendation system for current users of boardgamegeek.com, further filtering the results by categories gained from the game descriptions using natural language processing techniques.
+
+2. Build a content based solution for those that are not boardgamegeek.com members using attributes of the games themselves.
 
 ### Data collection
-boardgamegeek.com has an API that allowed me to access XML output for each board game and each user. I used web-scraping techniques to fill obtain unique ids for every game in the database and from there wrote scripts to call the API, assign variables from a json output, and organize all records in a MongoDB database. I found that there is a 5 second rule on API calls, which meant I had to run my script for a few days. As a result I ran the script on an AWS instance, moved the MongoDB data to EC2, and then pulled the data down locally from there. I made a preliminary cutoff at 1000 games.
+boardgamegeek.com (BGG) has an API that allowed me to access XML output for each board game and each user. I used web-scraping techniques to obtain unique ids for every game in the database and from there wrote scripts to call the API, assign variables from a json output, and organize all records into a MongoDB database. I found that there is a 5 second rule on API calls, which meant I had to run my script for a few days. As a result I ran the script on an AWS instance, moved the MongoDB data to EC2, and then pulled the data down locally from there. I made a preliminary cutoff at the top 1000 games rated on BGG.
 
 ### Dataset
 When putting my data into MongoDB, I organized my data into two datasets:
-- Comments/ratings: this included every rating and comment made by users on the first 1000 board games (1.3 million records, 65,000 unique users)
+- Comments/ratings: this included every rating and comment made by users on the first 1000 board games which gave me around 1.2 million records, reviews from about 65,000 unique users, with an average of 18 reviews by each user.
 
-- Statistics: (note "statistics" is the name boardgamegeek.com gives this group when calling the API so I am following suit) In total 161 columns, 131 of which were boolean values indicating whether a game belonged to a particular mechanic or category group. I included the board game description as a variables here as well. Other highlighted variables were board game weight (complexity), play time, best number of players, and various user voted ratings.
+ ![Alt text](https://github.com/Jomonsugi/bgg-exploration/tree/master/plots/ratings_200.png)
+
+- Statistics: (note "statistics" is the name BGG gives this group when calling the API so I am following convention) In total 161 columns, 131 of which were boolean values indicating whether a game belonged to a particular mechanic or category group. I included the board game description as a variables here as well. Other highlighted variables were board game weight (complexity), play time, best number of players.
 
 ### Clustering and Distance Matrices
 Most of my EDA concerned the second dataset of statistics as I wanted to find variables that could be possibly be clustered together or otherwise give a strong indication of a game someone might like with strong preferences. I used k-modes and k-prototype on various variables and through silhouette scores/plots found promising groups in the mechanic and category groups. I then created hammond distance matrices as a tool to find the most similar games to any particular game based on it's combinations of mechanics and categories. From domain knowledge, I want to note that I believe these distance matrices alone would be a powerful way to suggest a game to someone. Results could be further filtered by the complexity of the game, and user input like number of players and time.  For this project I decided to move forward and pursue other techniques, but I would like to come back to this intuition in the future to further develop the idea.
