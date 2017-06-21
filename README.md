@@ -13,24 +13,40 @@ boardgamegeek.com (BGG) has an API that allowed me to access XML output for each
 When putting my data into MongoDB, I organized my data into two datasets:
 - Comments/ratings: this included every rating and comment made by users on the first 1000 board games which gave me around 1.2 million records, reviews from about 65,000 unique users, with an average of 18 reviews by each user.
 
- ![Alt text](https://github.com/Jomonsugi/bgg-exploration/tree/master/plots/ratings_200.png)
+ <img src='https://github.com/Jomonsugi/bgg-exploration/blob/master/plots/ratings_200.png?raw=true'>
 
 - Statistics: (note "statistics" is the name BGG gives this group when calling the API so I am following convention) In total 161 columns, 131 of which were boolean values indicating whether a game belonged to a particular mechanic or category group. I included the board game description as a variables here as well. Other highlighted variables were board game weight (complexity), play time, best number of players.
 
 ### Clustering and Distance Matrices
-Most of my EDA concerned the second dataset of statistics as I wanted to find variables that could be possibly be clustered together or otherwise give a strong indication of a game someone might like with strong preferences. I used k-modes and k-prototype on various variables and through silhouette scores/plots found promising groups in the mechanic and category groups. I then created hammond distance matrices as a tool to find the most similar games to any particular game based on it's combinations of mechanics and categories. From domain knowledge, I want to note that I believe these distance matrices alone would be a powerful way to suggest a game to someone. Results could be further filtered by the complexity of the game, and user input like number of players and time.  For this project I decided to move forward and pursue other techniques, but I would like to come back to this intuition in the future to further develop the idea.
-
-### Natural Language Processing
-From my project goals, I used NLP techniques to find explore possible clusters within the description and user comments. I used a combination of spaCy, Sk-learn, and NLTK to preprocess the data. I filtered out HTML content, removed conventional stop words (and later custom stop words that I found to be domain specific), tokenized, lemmatized, and then transformed all documents to a Tf-idf matrix. From there I started with LDA to look at possible clusters among board game descriptions, using a package called ldaviz to explore my output. Through many iterations I found LDA grouped a large metatopic that I could just call "board gaming" and smaller topics that overlapped each other. Instead of trusting the output I moved to non-negative matrix factorization and immediately found good results. NMF, grouped the game descriptions into intuitive and helpful thematic groups. Further goals are to use NMF to group the comments, as I found similar results to descriptions using LDA.
+Most of my EDA concerned the second dataset of statistics as I wanted to find variables that could possibly be clustered together or otherwise give a strong indication of a game someone might like with strong preferences. I used k-modes and k-prototype on various variables and through silhouette scores/plots found promising groups in the mechanic and category groups. I then created a hammond distance matrix as a tool to find the most similar games to any particular game based on it's combinations of mechanics and categories. I found it interesting that on further inspection, even though the distance matrix was derived solely on category and mechanic information, trends were visible when looking at average play time, complexity rating, and best number of players. From domain knowledge, I want to note that I believe these distance matrices alone are a powerful way to suggest a game to someone. By giving users the ability to filter results on number of players and play time, this approach alone builds a powerful content based recommendation system. Future work will include exploring the addition of new variables to my distance matrix and giving users other options to customize  their recommendations.
 
 ### Spark and Alternating Least Squares
-After find a few promising ideas/results from exploring the statistics data set I moved on to the comments/ratings. My dataset lended to leveraging Spark's machine learning library as the dataset was quite large and I only pulled ratings/comments down for the first 1000 games so I wanted to create a scalable system for future growth. I started by pulling the data from MongoDB directly into a Spark's data structures (RDD and DataFrame). From there I further organized the data, trained/tested an ALS model, created a dataframe of users and games they have not rated and used my optimized model to create a new dataframe with predictions.
+After finding a few promising results from exploring the statistics data set I moved on to the ratings. The user/ratings data that I have allows me to create a utility matrix in which my goal is to predict ratings for games that users have not rated. As 98% of this matrix is null, I am dealing with quite a sparse matrix, however the problem lends itself to collaborative filtering, where I can predict ratings based on previous ratings I already have. I chose alternating least squares as my model to predict for the following reasons:
+- it has been proved to give good results on sparse matrices like mine
+- the model is parallelizable which gives me the advantage of using spark to optimize my model and produce recommendations
+- I can use ALS-WR to weight the regularization parameter thus making it less dependent on the scale of the dataset
+
+I started by pulling the data from MongoDB directly into a Spark's data structures (RDD and DataFrame). From there I further organized the data and split it into a training, validation, and test set. I coded a customized grid search to find the optimal regularization parameter, number of iterations, and rank using my training and validation sets, and then tested my model on the holdout test set. This model is fully functioning and is able to produce recommendations for individual users.
+
+### Natural Language Processing
+I did want to diversify the output results, with a goal of hopefully making my recommendations more interesting for users. Each game on BGG has a description attached to it I decided to use natural language processing techniques see if I could find categories of games. I used a combination of spaCy, Sk-learn, and NLTK to preprocess the data. I filtered out HTML content, removed conventional stop words (and later custom stop words that I found to be domain specific), tokenized, lemmatized, and then transformed all documents to a Tf-idf matrix. From there I started with LDA to look at possible clusters among board game descriptions, using a package called ldaviz to explore my output. Through many iterations I found LDA grouped a large metatopic that I could just call "board gaming" and smaller topics that overlapped each other. I moved to non-negative matrix factorization and immediately found better results. NMF, grouped the game descriptions into intuitive and helpful thematic groups. After testing through options, I settled on grouping games into eight topics. I then went back to my results from my ALS model and setup a script to check the top 8 suggested games for these topics (representing categories of games). If any of the topics were not present I pulled the closest ranked game marked with the topic into the top eight as a way of diversifying the users recommendations.
+
+Here is an example of one topic gained from NMF topic modeling which I called "resource management games"
+
+<img src='https://github.com/Jomonsugi/bgg-exploration/blob/master/plots/documents_basisW1.png?raw=true'>
+
+And here is a before and after top 10 for one particular user, first only using ALS, and then adding in the topic modeling diversity technique:
+
+<img src='https://github.com/Jomonsugi/bgg-exploration/blob/master/screen_shots/Screen%20Shot%202017-06-20%20at%2011.18.19%20PM.png?raw=true'>
+
+<img src='https://github.com/Jomonsugi/bgg-exploration/blob/master/screen_shots/Screen%20Shot%202017-06-20%20at%2011.20.12%20PM.png?raw=true'>
+
+
+### Flask App
+I created a flask app to enable users to interact with both my collaborative and content-based models. The collaborative recommendation portion lets users of boardgamegeek.com enter their using name, and if they choose, pick the number of players they prfer to play with and a min and max play time. The content-based portion allows anyone to enter a game they like (currently rated within BGG's top 1000), and with the same options available as the collaborative model, a recommendation of games similar to the game they have entered is output.
 
 ### Current Work
-At this point I have a scalable workflow where I have automated scripts to put data into mongodb, pull the data into Spark, optimize my model with any new data, and produce predictions for all users. From here I want to put the predictions into a pandas DataFrame and circle back to my statitics data features. Although the results I have are enough to make a strong recommendation for a user, I would like to use domain knowledge to further curate the list. Distributing recommendations by the topics I produced using NMF, game complexity, mechanics, and categories, along with user input all come to mind.
-
-### Flask APP
-My tool lends itself to an app. Currently, I am working on producing a simple, one page app using Flask that allows the user to input their unique user name from boardgamegeek.com and produce a list of recommendations.
+At this point I have a scalable workflow where I have automated scripts that the put data into mongodb, pull the data into Spark, optimizes my model with any new data, and allows users to receive recommendations through a web app. From here I want to continue work on my app so that it can be deployed on AWS. I also would like to pull more games and users into my database to expand the functionality of my system.
 
 #### Site:
 
@@ -38,7 +54,7 @@ https://boardgamegeek.com/browse/boardgame
 
 #### References
 
-http://www.cs.columbia.edu/~blei/papers/WangBlei2011.pdf
+https://link.springer.com/chapter/10.1007%2F978-3-540-68880-8_32
 
 https://satwikkottur.github.io/reports/F14-ML-Report.pdf
 
@@ -46,8 +62,6 @@ http://infolab.stanford.edu/~ullman/mmds/ch9.pdf
 
 
 #### Code
-
-https://github.com/blei-lab/ctr
 
 https://github.com/d4le/recommend
 
