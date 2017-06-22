@@ -5,8 +5,8 @@ from scipy.sparse import csr_matrix
 
 def from_mongo():
     client = MongoClient()
-    db = client.bgg_test
-    df = pd.DataFrame(list(db.game_comments_test.find()))
+    db = client.bgg
+    df = pd.DataFrame(list(db.game_comments.find()))
     return df
 
 def pickle_df(df):

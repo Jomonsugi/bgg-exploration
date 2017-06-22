@@ -37,6 +37,7 @@ def hamming(bool_df, df):
     distance_matrix = (1 - pairwise_distances(bool_df, metric = "hamming"))
     top_10 = list(distance_matrix[0].argsort()[:-10:-1])
     # print(df.iloc[top_10,149])
+    # print(distance_matrix)
     return distance_matrix
 
 def jaccard(bool_df, df):
@@ -47,7 +48,7 @@ def jaccard(bool_df, df):
 
 def prep_columns(df):
     df = df[['Board Game Rank','game_id','game','description','playing_time','min_players', 'max_players', 'best_num_players', 'avg_rating', 'avg_weight', 'nmf', 'Game']]
-    df.columns = ['Board Game Rank','game_id','game','Description','Playing Time','Min Players', 'Max Players', 'Best Num Players', 'avg_rating', 'Avg Weight', 'nmf', 'Game']
+    df.columns = ['BGG Rank','game_id','game','Description','Playing Time','Min Players', 'Max Players', 'Best Num Players', 'Avg Rating', 'Complexity', 'nmf', 'Game']
     return df
 
 def un_pickle_labeled_df():
@@ -91,9 +92,11 @@ def for_flask_content(board_game, best_num_player, min_time, max_time):
         one_user_df = one_user_df.loc[(one_user_df['Best Num Players'].isin(best_num_player))]
         one_user_df = one_user_df.reset_index()
         print(one_user_df.head())
-    rendered_df = one_user_df[['Game','Playing Time', 'Min Players', 'Max Players', 'Best Num Players' ,'Avg Weight']]
+    one_user_df = one_user_df.round({'Complexity': 1 })
+    # rendered_df = one_user_df[['Game','Playing Time','Best Num Players' ,'Complexity']]
+    rendered_df = one_user_df[['BGG Rank','Game','Playing Time','Min Players', 'Max Players','Best Num Players','Complexity']]
     return rendered_df.iloc[1:21,:]
 
 if __name__ == '__main__':
     pass
-    # rendered_df = for_flask(board_game)
+    # rendered_df = for_flask_content('Terraforming Mars', 4, 0, 100)

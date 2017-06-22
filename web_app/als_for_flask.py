@@ -209,7 +209,7 @@ def one_user_to_pd(nmf_labeled_df, one_user_predictions):
 #putting at least one game from each top in the top 10
 def redistribute(one_user_df):
     idx = one_user_df.index.values.tolist()
-    nmf = list(one_user_df['nmf'])
+    nmf = list(one_user_df['Topic'])
     pairs = tuple(zip(idx,nmf))
     topics = [1,2,3,4,5,6,7,8]
     nmf_8_idx = []
@@ -224,8 +224,8 @@ def redistribute(one_user_df):
     return nmeffed_df
 
 def prep_columns(df):
-    df = df[['Board Game Rank','game_id','game','description','playing_time','min_players', 'max_players', 'best_num_players', 'avg_rating', 'avg_weight', 'nmf', 'Game']]
-    df.columns = ['Board Game Rank','game_id','game','Description','Playing Time','Min Players', 'Max Players', 'Best Num Players', 'avg_rating', 'Avg Weight', 'nmf', 'Game']
+    df = df[['Board Game Rank','game_id','game','description','playing_time','min_players', 'max_players', 'best_num_players', 'avg_rating', 'avg_weight', 'nmf', 'Game', 'prediction']]
+    df.columns = ['BGG Rank','game_id','game','Description','Playing Time','Min Players', 'Max Players', 'Best Num Players', 'Avg Rating', 'Complexity', 'Topic', 'Game', 'Prediction']
     return df
 
 #once function rules them all
@@ -260,5 +260,7 @@ def for_flask(user_id, best_num_player, min_time, max_time):
         print(one_user_df.head())
     #now we are ready to redistribute the top 8 based on topics
     one_user_df = redistribute(one_user_df)
-    rendered_df = one_user_df[['Game','Playing Time', 'Min Players', 'Max Players', 'Best Num Players' ,'Avg Weight']]
+    one_user_df = one_user_df.round({'Prediction': 1, 'Complexity': 1 })
+    rendered_df = one_user_df[['BGG Rank','Game','Playing Time', 'Min Players', 'Max Players', 'Best Num Players' ,'Complexity']]
+    # rendered_df = one_user_df[['BGG Rank','Game','Prediction', 'Topic']]
     return rendered_df.iloc[0:20,:]
