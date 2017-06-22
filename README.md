@@ -31,7 +31,7 @@ I started by pulling the data from MongoDB directly into a Spark's data structur
 ### Natural Language Processing
 I did want to diversify the output results, with a goal of hopefully making my recommendations more interesting for users. Each game on BGG has a description attached to it I decided to use natural language processing techniques see if I could find categories of games. I used a combination of spaCy, Sk-learn, and NLTK to preprocess the data. I filtered out HTML content, removed conventional stop words (and later custom stop words that I found to be domain specific), tokenized, lemmatized, and then transformed all documents to a Tf-idf matrix. From there I started with LDA to look at possible clusters among board game descriptions, using a package called ldaviz to explore my output. Through many iterations I found LDA grouped a large metatopic that I could just call "board gaming" and smaller topics that overlapped each other. I moved to non-negative matrix factorization and immediately found better results. NMF, grouped the game descriptions into intuitive and helpful thematic groups. After testing through options, I settled on grouping games into eight topics. I then went back to my results from my ALS model and setup a script to check the top 8 suggested games for these topics (representing categories of games). If any of the topics were not present I pulled the closest ranked game marked with the topic into the top eight as a way of diversifying the users recommendations.
 
-Here is an example of one topic gained from NMF topic modeling which I called "resource management games"
+Here is an example of one topic produced from NMF topic modeling which I called "resource management games"
 
 <img src='https://github.com/Jomonsugi/bgg-exploration/blob/master/plots/documents_basisW1.png?raw=true'>
 
@@ -39,11 +39,13 @@ And here is a before and after top 10 for one particular user, first only using 
 
 <img src='https://github.com/Jomonsugi/bgg-exploration/blob/master/screen_shots/Screen%20Shot%202017-06-20%20at%2011.18.19%20PM.png?raw=true'>
 
-<img src='https://github.com/Jomonsugi/bgg-exploration/blob/master/screen_shots/Screen%20Shot%202017-06-20%20at%2011.20.12%20PM.png?raw=true'>
+The red outlines 3 newcomers to our new list based on diversification of topics gained from the descriptions.
+<br><br>
+<img src='https://github.com/Jomonsugi/bgg-exploration/blob/master/screen_shots/Screen%20Shot%202017-06-21%20at%208.39.53%20PM.png?raw=true'>
 
 
 ### Flask App
-I created a flask app to enable users to interact with both my collaborative and content-based models. The collaborative recommendation portion lets users of boardgamegeek.com enter their using name, and if they choose, pick the number of players they prfer to play with and a min and max play time. The content-based portion allows anyone to enter a game they like (currently rated within BGG's top 1000), and with the same options available as the collaborative model, a recommendation of games similar to the game they have entered is output.
+I created a flask app to enable users to interact with both my collaborative and content-based models. The collaborative recommendation portion lets users of boardgamegeek.com enter their using name, and if they choose, pick the number of players they prfer to play with and a min and max play time. The content-based portion allows anyone to enter a game they like (currently rated within BGG's top 1000), and with the same options available as the collaborative model, a recommendation of games similar to the game they have entered is output. The app is currently only working locally as I the package I used to communicate with spark from mongdb is not playing nicely on AWS. I will be finding a solution for that problem in the short term and will post my app here when it is public.
 
 ### Current Work
 At this point I have a scalable workflow where I have automated scripts that the put data into mongodb, pull the data into Spark, optimizes my model with any new data, and allows users to receive recommendations through a web app. From here I want to continue work on my app so that it can be deployed on AWS. I also would like to pull more games and users into my database to expand the functionality of my system.
