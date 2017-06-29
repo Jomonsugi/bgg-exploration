@@ -1,4 +1,4 @@
-# Board Game Geek Recommender
+# Board Game Recommender
 
 ### Goal
 
