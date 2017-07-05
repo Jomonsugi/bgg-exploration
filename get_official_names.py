@@ -31,10 +31,10 @@ def replace(official):
     return official
 
 def to_pickle(official):
-    with open('data/official_game_dict.pkl', 'wb') as fp:
+    with open('data/official_game_dict_p2.pkl', 'wb') as fp:
         pickle.dump(official, fp, protocol=2)
 
 if __name__ == '__main__':
-    # official = get_game_names(21)
-    # official = replace(official)
+    official = get_game_names(145)
+    official = replace(official)
     to_pickle(official)
