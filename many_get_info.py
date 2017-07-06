@@ -20,7 +20,7 @@ def get_stats_results():
     return stat_results
 
 def get_stats(id_game_dict, stat_results):
-    count = 1
+    count = 100
     for current_stat_results in stat_results:
         print(count)
         for current_game_stats in current_stat_results['items']['item']:
@@ -37,7 +37,7 @@ def get_stats(id_game_dict, stat_results):
             try:
                 description = current_game_stats['description']['TEXT']
                 #list of html tags that will be replaced by spaces
-                replace_lst_dic = {"&#10;&#10;" : " ", "&#10;" : " ", "&rsquo;" : "'"}
+                replace_lst_dic = {"&#10;&#10;" : " ", "&#10;" : " ", "&rsquo;" : "'", "&ndash;" : "–", "&mdash" : "—"}
                 for i, j in replace_lst_dic.items():
                     description = description.replace(i, j)
                 description = re.sub(r'&ldquo;|&rdquo;|&quot;', '"', description)
@@ -98,13 +98,13 @@ def get_stats(id_game_dict, stat_results):
             #gives back a list of tuples with (ranking type,ranking id, ranking)
             #I'm shelving this for now as I do not have immediate use for the
             #breakdown in ratings
-            '''
+
             ranks = stats_dict['ratings']['ranks']['rank']
             if type(ranks) == list:
                 for x in ranks:
                     rankings = []
                     try:
-                        rankings.append((x['friendlyname'],x['id'],int(x['value']))
+                        rankings.append((x['friendlyname'],x['id'],int(x['value'])))
                     except:
                         rankings.append((x['friendlyname'],x['id'],None))
             else:
@@ -112,7 +112,7 @@ def get_stats(id_game_dict, stat_results):
                     rankings = (ranks['friendlyname'],ranks['id'], None)
                 else:
                     rankings = (ranks['friendlyname'],ranks['id'],int(ranks['value']))
-            '''
+
             #number of ratings
             users_rated = int(stats_dict['ratings']['usersrated']['value'])
             #year published
@@ -151,12 +151,12 @@ def get_stats(id_game_dict, stat_results):
             '''
             # print(game_id)
 
-            stats_to_mongo(stats_coll, game, game_id, description, categories, mechanics, kickstarter, designer, min_players, max_players, min_playtime, playing_time, min_age, best_num_players, bnp_total_votes, avg_rating, bayesavg_rating, avg_weight, num_comments, num_weights, users_rated, year_published)
+            stats_to_mongo(stats_coll, game, game_id, description, categories, mechanics, kickstarter, designer, min_players, max_players, min_playtime, playing_time, min_age, best_num_players, bnp_total_votes, avg_rating, bayesavg_rating, avg_weight, num_comments, num_weights, rankings, users_rated, year_published)
 
-            count += 1
+        count += 100
 
 
-def stats_to_mongo(stats_coll, game, game_id, description, categories, mechanics, kickstarter, designer, min_players, max_players, min_playtime, playing_time, min_age, best_num_players, bnp_total_votes, avg_rating, bayesavg_rating, avg_weight, num_comments, num_weights, users_rated, year_published):
+def stats_to_mongo(stats_coll, game, game_id, description, categories, mechanics, kickstarter, designer, min_players, max_players, min_playtime, playing_time, min_age, best_num_players, bnp_total_votes, avg_rating, bayesavg_rating, avg_weight, num_comments, num_weights, rankings, users_rated, year_published):
 
         # category_bool = ",".join(['"{}_category": 1'.format(x[1]) for x in categories])
 
@@ -204,7 +204,6 @@ def stats_to_mongo(stats_coll, game, game_id, description, categories, mechanics
                 stats_coll.update_one({'game_id' : game_id},
                      {'$set' : {mech : True}})
         #if pulling rankings list into database
-        '''
         if rankings:
             if type(rankings) == list:
                 for ranking in rankings:
@@ -213,7 +212,6 @@ def stats_to_mongo(stats_coll, game, game_id, description, categories, mechanics
             else:
                 stats_coll.update_one({'game_id' : game_id},
                      {'$set' : {rankings[0]: rankings[2]}})
-        '''
 
 
 if __name__ == '__main__':
@@ -244,7 +242,7 @@ if __name__ == '__main__':
     i_one = 0
     i_two = 100
     call_id_lst = []
-    for r in range(140):
+    for r in range(145):
         call_id_lst.append([x[0] for x in id_game_lst[i_one:i_two]])
         i_one += 100
         i_two += 100
