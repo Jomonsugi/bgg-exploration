@@ -101,8 +101,8 @@ def get_stats(id_game_dict, stat_results):
 
             ranks = stats_dict['ratings']['ranks']['rank']
             if type(ranks) == list:
+                rankings = []
                 for x in ranks:
-                    rankings = []
                     try:
                         rankings.append((x['friendlyname'],x['id'],int(x['value'])))
                     except:
