@@ -81,7 +81,7 @@ def get_stats(id_game_dict, stat_results):
                     best_num_players = int((max(best_num_players_votes,key=itemgetter(1))[0])[0])
                 else:
                     #no room for difference in dict structure...
-                    best_num_players = [(None, None)]
+                    best_num_players = None
             bnp_total_votes = int(rec_players_poll['totalvotes'])
             #stats dict
             stats_dict = current_game_stats['statistics']
@@ -208,10 +208,10 @@ def stats_to_mongo(stats_coll, game, game_id, description, categories, mechanics
             if type(rankings) == list:
                 for ranking in rankings:
                     stats_coll.update_one({'game_id' : game_id},
-                         {'$set' : {ranking[0]: ranking[2]}})
+                         {'$set' : {ranking[0]: int(ranking[2])}})
             else:
                 stats_coll.update_one({'game_id' : game_id},
-                     {'$set' : {rankings[0]: rankings[2]}})
+                     {'$set' : {rankings[0]: int(rankings[2])}})
 
 
 if __name__ == '__main__':
