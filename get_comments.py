@@ -7,6 +7,8 @@ import pickle
 import numpy as np
 import time
 from collections import defaultdict
+import requests
+from bs4 import BeautifulSoup
 
 
 error_lst = []
@@ -19,28 +21,36 @@ def get_ratings_comments_results(call_id_lst, comments_coll):
         #specify starting page number, should be 1 unless testing
         page = 1
         while page != None:
-            # time.sleep(np.random.choice(random_sec))
+            time.sleep(np.random.choice(random_sec))
             print("page:", page)
             try:
+                print("for call")
+                print("game_id", game_id)
+                print("page:", page)
                 comment_results = conn.boardgame(game_id, comments=True, page=page, pagesize=100)
-                print(comment_results)
+                # print(comment_results)
                 try:
                     comments = comment_results['items']['item']['comments']['comment']
-                    # print("comments:" ,comments)
+                    print("comments:" ,comments)
                     # print("length:",len(comments))
                     for entry in comments:
                         try:
                             rating = float(entry.get('rating'))
                         except ValueError:
                             rating = None
+                        username = entry.get('username')
+                        r = requests.get("https://www.boardgamegeek.com/xmlapi2/user?name="+username)
+                        soup = BeautifulSoup(r.text, "xml")
+                        user_id = soup.findAll('user')[0]["id"]
                         comments_coll.insert_one({"game": current_game,
                                         "game_id": str(current_id),
-                                        "username": entry.get('username'),
+                                        "user_id" : user_id,
+                                        "username": username,
                                         "rating": rating,
                                         "comment": entry.get('value')
                                             })
                     page += 1
-                    time.sleep(np.random.choice(random_sec))
+                    # time.sleep(np.random.choice(random_sec))
                 except KeyError:
                     # print("no comments")
                     page = None
@@ -55,7 +65,7 @@ def get_ratings_comments_results(call_id_lst, comments_coll):
 
 
 def to_pickle(error_lst):
-    with open('data/errors_5_28.pkl', 'wb') as fp:
+    with open('data/errors_9_16.pkl', 'wb') as fp:
         pickle.dump(error_lst, fp)
 
 if __name__ == '__main__':
