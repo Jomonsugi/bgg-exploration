@@ -1,22 +1,15 @@
-from libbgg.apiv2 import BGG
-from datetime import datetime
-import re
-from operator import itemgetter
 from pymongo import MongoClient
 import pickle
 import numpy as np
 import time
-from collections import defaultdict
 import requests
 from bs4 import BeautifulSoup
 
-
-error_lst = []
 def get_ratings_comments_results(ratings_coll):
     for game_id in call_id_lst:
         with open('data/pickles/user_dict_091617.pkl', 'rb') as fp:
             user_dict = pickle.load(fp)
-        print(len(user_dict))
+        print("users in dictionary:", len(user_dict))
         # current_game = id_game_dict.get(current_id)
         print("current_id:", game_id)
         # print("current_game:", current_game)
@@ -41,6 +34,7 @@ def get_ratings_comments_results(ratings_coll):
                 for tag in tags:
                     try:
                         rating = tag['rating']
+                        print(rating)
                         if len(rating) == 0:
                             rating = None
                     except:
@@ -54,7 +48,8 @@ def get_ratings_comments_results(ratings_coll):
                         username == None
                     try:
                         comment = tag['value']
-                        if len(value) == 0:
+                        print(comment)
+                        if len(comment) == 0:
                             comment = None
                     except:
                         comment = None
@@ -70,21 +65,33 @@ def get_ratings_comments_results(ratings_coll):
                             time.sleep(np.random.choice(random_sec))
                             print("from api:",user_id)
                         except:
-                            print("user id request on 1st try:")
-                            print("page:", page)
-                            print("game:", current_game)
-                            raise ValueError('Error while calling API for user id')
+                            try:
+                                time.sleep(30)
+                                r2 = requests.get("https://www.boardgamegeek.com/xmlapi2/user?name="+username)
+                                soup = BeautifulSoup(r2.text, "xml")
+                                user_id = soup.findAll('user')[0]["id"]
+                                user_dict[username]=user_id
+                                time.sleep(np.random.choice(random_sec))
+                                print("from api:",user_id)
+                            except:
+                                print("failed user id requests on:")
+                                print("page:", page)
+                                print("game:", current_game)
+                                raise ValueError('Error while calling API for user id')
 
-                    ratings_coll.update_one({"game_id": game_id },
-                                    {'$set' : {"game": current_game,
-                                    "game": current_game,
+                    ratings_coll.update({"game_id": str(game_id),
+                                    "user_id": str(user_id)},
+                                    {"game": current_game,
                                     "game_id": str(game_id),
                                     "user_id" : str(user_id),
                                     "username": username,
-                                    "rating": int(rating),
+                                    "rating": float(rating),
                                     "comment": comment
-                                        }}, upsert=True)
+                                        }, upsert=True)
+
                 page += 1
+                with open('data/pickles/user_dict_091617.pkl', 'wb') as fp:
+                    pickle.dump(user_dict, fp)
             else:
                 with open('data/pickles/user_dict_091617.pkl', 'wb') as fp:
                     pickle.dump(user_dict, fp)
@@ -93,9 +100,11 @@ def get_ratings_comments_results(ratings_coll):
 
 if __name__ == '__main__':
     conn = BGG()
-    random_sec = np.random.uniform(5,6,[10000,])
-    #open pickle file with ids,games,rating for use
-    with open('data/game_ids_170516.pkl','rb') as fp:
+    random_sec = np.random.uniform(5,5.5,[10000,])
+    '''
+    This pickle file needs to be updated (update filename as well) using get_ids.py before running this script so that new games and updated ratings will be applied to the database
+    '''
+    with open('data/pickles/game_ids_091617.pkl','rb') as fp:
         id_game_lst = pickle.load(fp)
 
     client = MongoClient()
@@ -104,10 +113,6 @@ if __name__ == '__main__':
     #collection for stats variables to go in
     ratings_coll = database.game_ratings
 
-    # id_game_dict = {x[0] : x[1] for x in id_game_lst[:-1]}
-    #reverse lookup for dictionary
-    # next(key for key, value in id_game_dict.items() if value == 'tzolk-mayan-calendar')
-
-    #this range identifies the games that will be databased from the #id_game_lst
-    call_id_lst = [x[0] for x in id_game_lst[:1]]
+    '''This range identifies the games that will be databased from the #id_game_lst. x[0] is the game id in id_game_lst. The index of id_game_lst will select that range of games that will be updated in the database'''
+    call_id_lst = [x[0] for x in id_game_lst[:100]]
     get_ratings_comments_results(ratings_coll)
